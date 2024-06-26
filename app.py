@@ -1,19 +1,27 @@
-# using streamlit 
-import streamlit as st 
-import pandas as pd 
+import streamlit as st
+import pandas as pd
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Load the tokenizer and model
 tokenizer = Tokenizer()
-model = load_model('best_model.h5')
+
+try:
+    model = load_model('best_model.h5')
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    st.stop()
 
 # Fit the tokenizer on the text data from the file
-with open('emotion_train.txt', 'r') as file:
-    text_data = file.read().splitlines()
-    texts = [line.split(';')[0] for line in text_data]
-    tokenizer.fit_on_texts(texts)
+try:
+    with open('emotion_train.txt', 'r') as file:
+        text_data = file.read().splitlines()
+        texts = [line.split(';')[0] for line in text_data]
+        tokenizer.fit_on_texts(texts)
+except Exception as e:
+    st.error(f"Error loading or processing text data: {e}")
+    st.stop()
 
 # Mapping of predicted class to emotion labels
 class_labels = {0: 'Sadness 😭', 1: 'Angry 😠', 2: 'Love 😍', 3: 'Surprise 😲', 4: 'Fear 😨', 5: 'Joy 😂'}
@@ -30,16 +38,15 @@ if page == 'Home':
     st.write("""
     This application uses a machine learning model to classify the emotion of a given text.
     The model can predict the following emotions: Sadness, Angry, Love, Surprise, Fear, Joy.
-            """)
-    
+    """)
+
     st.write('Here is a preview of the dataset used to train the model:')
-    
+
     # show first 10 rows of dataset
     df = pd.DataFrame(texts, columns=['Text'])
     st.write(df.head(10))
 
     st.write("""
-    
     ## Model Selection Process
 
     In the process of selecting the best model for our emotion classifier, we compared three different models: Sequential, RNN, and CNN. 
@@ -55,7 +62,6 @@ if page == 'Home':
     In the context of our emotion classifier, the CNN model processes the input text by first converting it into a sequence of word embeddings. These embeddings are then passed through multiple convolutional layers, which extract relevant features from the text. The extracted features are then fed into fully connected layers, which perform the final classification to predict the emotion of the input text.
 
     The use of CNNs allows our model to capture complex patterns and relationships in the text data, leading to more accurate emotion predictions.
-    
     """)
 
 elif page == 'Emotion Classifier':
